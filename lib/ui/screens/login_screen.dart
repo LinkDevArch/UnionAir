@@ -68,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     backgroundColor: const Color(0xFFF5F5F5),
     body: LayoutBuilder(
       builder: (context, constraints) {
+        if (usesDesktopLayout(context)) return _desktopLogin();
         final scale = (constraints.maxWidth / 440).clamp(.72, 1.1);
         final designHeight = math.max(constraints.maxHeight, 890 * scale);
         final topInset = MediaQuery.viewPaddingOf(context).top;
@@ -103,113 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: EdgeInsets.symmetric(horizontal: 32 * scale),
                           child: ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 360),
-                            child: Form(
-                              key: _form,
-                              child: AutofillGroup(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    const Copy(
-                                      'Inicia sesión',
-                                      align: TextAlign.center,
-                                      size: 24,
-                                      color: Colors.black,
-                                    ),
-                                    const SizedBox(height: 10),
-                                    const Copy(
-                                      'Accede y encuentra\ntu próximo vuelo',
-                                      align: TextAlign.center,
-                                      size: 16,
-                                      color: Colors.black,
-                                      weight: FontWeight.w300,
-                                      height: 1.1,
-                                    ),
-                                    const SizedBox(height: 30),
-                                    _field(
-                                      label: 'Correo electrónico',
-                                      hint: 'nombre@correo.com',
-                                      controller: _email,
-                                      keyboard: TextInputType.emailAddress,
-                                      autofill: AutofillHints.email,
-                                      validate: (value) =>
-                                          Passenger.validEmail(value)
-                                          ? null
-                                          : 'Ingresa un correo válido.',
-                                    ),
-                                    const SizedBox(height: 7),
-                                    _field(
-                                      label: 'Contraseña',
-                                      hint: 'Ingresa tu contraseña',
-                                      controller: _password,
-                                      secret: true,
-                                      autofill: AutofillHints.password,
-                                      validate: (value) => value.isNotEmpty
-                                          ? null
-                                          : 'Ingresa tu contraseña.',
-                                    ),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton(
-                                        onPressed: () =>
-                                            _accountDialog(register: false),
-                                        child: const Copy(
-                                          '¿Olvidaste tu contraseña?',
-                                          size: 13,
-                                          color: Color(0xFF0057BA),
-                                        ),
-                                      ),
-                                    ),
-                                    if (_error case final error?)
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 12,
-                                        ),
-                                        child: Semantics(
-                                          liveRegion: true,
-                                          child: Copy(
-                                            error,
-                                            size: 12,
-                                            color: danger,
-                                          ),
-                                        ),
-                                      ),
-                                    const SizedBox(height: 5),
-                                    ActionButton(
-                                      'Ingresar',
-                                      _submit,
-                                      height: 60,
-                                      radius: 33,
-                                      fontSize: 20,
-                                      color: const Color(0xFF0075F2),
-                                      weight: FontWeight.w400,
-                                    ),
-                                    const SizedBox(height: 13),
-                                    Wrap(
-                                      alignment: WrapAlignment.center,
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
-                                      children: [
-                                        const Copy(
-                                          '¿No tienes cuenta?',
-                                          size: 13,
-                                          color: Color(0xFF292E36),
-                                        ),
-                                        TextButton(
-                                          onPressed: () =>
-                                              _accountDialog(register: true),
-                                          child: const Copy(
-                                            'Regístrate',
-                                            size: 13,
-                                            color: Color(0xFF0057BA),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            child: _loginForm(),
                           ),
                         ),
                       ),
@@ -221,6 +116,167 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
+    ),
+  );
+
+  Widget _desktopLogin() => ColoredBox(
+    color: canvasColor,
+    child: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1250, maxHeight: 820),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: 11,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          'assets/login-background.webp',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter,
+                          excludeFromSemantics: true,
+                        ),
+                        const Align(
+                          alignment: Alignment.topLeft,
+                          child: Padding(
+                            padding: EdgeInsets.all(34),
+                            child: Brand(
+                              white: true,
+                              large: true,
+                              alignment: MainAxisAlignment.start,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 9,
+                    child: ColoredBox(
+                      color: Colors.white,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 36,
+                            vertical: 22,
+                          ),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 420),
+                            child: _loginForm(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  Widget _loginForm() => Form(
+    key: _form,
+    child: AutofillGroup(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Copy(
+            'Inicia sesión',
+            align: TextAlign.center,
+            size: 24,
+            color: Colors.black,
+          ),
+          const SizedBox(height: 10),
+          const Copy(
+            'Accede y encuentra\ntu próximo vuelo',
+            align: TextAlign.center,
+            size: 16,
+            color: Colors.black,
+            weight: FontWeight.w300,
+            height: 1.1,
+          ),
+          const SizedBox(height: 30),
+          _field(
+            label: 'Correo electrónico',
+            hint: 'nombre@correo.com',
+            controller: _email,
+            keyboard: TextInputType.emailAddress,
+            autofill: AutofillHints.email,
+            validate: (value) => Passenger.validEmail(value)
+                ? null
+                : 'Ingresa un correo válido.',
+          ),
+          const SizedBox(height: 7),
+          _field(
+            label: 'Contraseña',
+            hint: 'Ingresa tu contraseña',
+            controller: _password,
+            secret: true,
+            autofill: AutofillHints.password,
+            validate: (value) =>
+                value.isNotEmpty ? null : 'Ingresa tu contraseña.',
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => _accountDialog(register: false),
+              child: const Copy(
+                '¿Olvidaste tu contraseña?',
+                size: 13,
+                color: Color(0xFF0057BA),
+              ),
+            ),
+          ),
+          if (_error case final error?)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Semantics(
+                liveRegion: true,
+                child: Copy(error, size: 12, color: danger),
+              ),
+            ),
+          const SizedBox(height: 5),
+          ActionButton(
+            'Ingresar',
+            _submit,
+            height: 60,
+            radius: 33,
+            fontSize: 20,
+            color: const Color(0xFF0075F2),
+            weight: FontWeight.w400,
+          ),
+          const SizedBox(height: 13),
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              const Copy(
+                '¿No tienes cuenta?',
+                size: 13,
+                color: Color(0xFF292E36),
+              ),
+              TextButton(
+                onPressed: () => _accountDialog(register: true),
+                child: const Copy(
+                  'Regístrate',
+                  size: 13,
+                  color: Color(0xFF0057BA),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 
@@ -263,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: const TextStyle(fontSize: 15, color: navy),
           decoration: InputDecoration(
             hintText: hint,
-            fillColor: Colors.white,
+            fillColor: usesDesktopLayout(context) ? fieldColor : Colors.white,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 25,
               vertical: 15,

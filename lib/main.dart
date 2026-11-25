@@ -38,7 +38,9 @@ class _UnionAirAppState extends State<UnionAirApp> {
       color: const Color(0xFFE7EDF5),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: BoxConstraints(
+            maxWidth: usesDesktopLayout(context) ? double.infinity : 500,
+          ),
           child: child!,
         ),
       ),
@@ -140,8 +142,9 @@ class _HomeState extends State<_Home> with SingleTickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: FadeTransition(
+  Widget build(BuildContext context) {
+    final desktop = usesDesktopLayout(context);
+    final content = FadeTransition(
       opacity: reducesMotion(context)
           ? const AlwaysStoppedAnimation(1.0)
           : _tabOpacity,
@@ -160,52 +163,108 @@ class _HomeState extends State<_Home> with SingleTickerProviderStateMixin {
           ),
         ],
       ),
-    ),
-    bottomNavigationBar: Material(
-      color: Colors.white,
-      child: SafeArea(
-        top: false,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: AnimatedAlign(
-                alignment: _tab == 0 ? Alignment.topLeft : Alignment.topRight,
-                duration: motionDuration(context, motionStandard),
-                curve: motionEase,
-                child: const FractionallySizedBox(
-                  widthFactor: .5,
-                  child: Center(
-                    heightFactor: 1,
-                    child: SizedBox(
-                      width: 44,
-                      height: 3,
-                      child: ColoredBox(color: blue),
+    );
+    return Scaffold(
+      body: Row(
+        children: [
+          if (desktop) _desktopNavigation(),
+          Expanded(key: const ValueKey('home-content'), child: content),
+        ],
+      ),
+      bottomNavigationBar: desktop
+          ? null
+          : Material(
+              color: Colors.white,
+              child: SafeArea(
+                top: false,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: AnimatedAlign(
+                        alignment: _tab == 0
+                            ? Alignment.topLeft
+                            : Alignment.topRight,
+                        duration: motionDuration(context, motionStandard),
+                        curve: motionEase,
+                        child: const FractionallySizedBox(
+                          widthFactor: .5,
+                          child: Center(
+                            heightFactor: 1,
+                            child: SizedBox(
+                              width: 44,
+                              height: 3,
+                              child: ColoredBox(color: blue),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _Tab(
+                            icon: 'search',
+                            label: 'Buscar',
+                            selected: _tab == 0,
+                            onTap: () => _selectTab(0),
+                          ),
+                        ),
+                        Expanded(
+                          child: _Tab(
+                            icon: 'briefcase',
+                            label: 'Mis Viajes',
+                            selected: _tab == 1,
+                            onTap: () => _selectTab(1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: _Tab(
-                    icon: 'search',
-                    label: 'Buscar',
-                    selected: _tab == 0,
-                    onTap: () => _selectTab(0),
-                  ),
+    );
+  }
+
+  Widget _desktopNavigation() => SizedBox(
+    width: 214,
+    child: Material(
+      color: Colors.white,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 24, 12, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(width: 220, child: Brand()),
+              ),
+              const SizedBox(height: 28),
+              _DesktopTab(
+                icon: 'search',
+                label: 'Buscar',
+                selected: _tab == 0,
+                onTap: () => _selectTab(0),
+              ),
+              const SizedBox(height: 6),
+              _DesktopTab(
+                icon: 'briefcase',
+                label: 'Mis viajes',
+                selected: _tab == 1,
+                onTap: () => _selectTab(1),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: _signOut,
+                icon: const Icon(Icons.logout, size: 19),
+                label: const Text('Cerrar sesión'),
+                style: TextButton.styleFrom(
+                  alignment: AlignmentDirectional.centerStart,
                 ),
-                Expanded(
-                  child: _Tab(
-                    icon: 'briefcase',
-                    label: 'Mis Viajes',
-                    selected: _tab == 1,
-                    onTap: () => _selectTab(1),
-                  ),
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -246,6 +305,43 @@ class _Tab extends StatelessWidget {
             ),
             const SizedBox(height: 9),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DesktopTab extends StatelessWidget {
+  const _DesktopTab({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? blue : muted;
+    return Semantics(
+      selected: selected,
+      child: TextButton.icon(
+        onPressed: onTap,
+        icon: ArtIcon(icon, size: 22, color: color),
+        label: Text(label),
+        style: TextButton.styleFrom(
+          foregroundColor: color,
+          backgroundColor: selected ? paleBlue : null,
+          alignment: AlignmentDirectional.centerStart,
+          minimumSize: const Size(0, 46),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

@@ -20,62 +20,76 @@ class ReviewScreen extends StatelessWidget {
         subtitle: 'Verifica los detalles antes de confirmar',
       ),
       const SizedBox(height: 17),
-      Panel(
-        child: Column(
-          children: [
-            for (final (index, flight) in draft.flights.indexed) ...[
-              if (index > 0) const Divider(height: 18, color: borderColor),
-              _ItineraryLeg(flight: flight, returning: index > 0),
-            ],
-          ],
-        ),
-      ),
-      const SizedBox(height: 14),
-      Panel(child: _LabeledIcon('user', 'Pasajero', draft.passenger!.name)),
-      const SizedBox(height: 14),
-      Panel(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            _DetailRow('tag', 'Tarifa', draft.fare!.label),
-            const SizedBox(height: 5),
-            _DetailRow(
-              'seat',
-              'Asiento',
-              draft.flights
-                  .map((flight) => draft.seats[flight.inventoryKey]!)
-                  .join(' · '),
+      ...responsiveColumns(
+        context,
+        firstFlex: 6,
+        secondFlex: 4,
+        mobileGap: 14,
+        first: [
+          Panel(
+            child: Column(
+              children: [
+                for (final (index, flight) in draft.flights.indexed) ...[
+                  if (index > 0) const Divider(height: 18, color: borderColor),
+                  _ItineraryLeg(flight: flight, returning: index > 0),
+                ],
+              ],
             ),
-            const SizedBox(height: 5),
-            _DetailRow(
-              'briefcase',
-              'Equipaje adicional',
-              draft.baggage == Baggage.none ? 'Sin equipaje' : '1 maleta 23 kg',
+          ),
+          const SizedBox(height: 14),
+          Panel(child: _LabeledIcon('user', 'Pasajero', draft.passenger!.name)),
+          const SizedBox(height: 14),
+          Panel(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                _DetailRow('tag', 'Tarifa', draft.fare!.label),
+                const SizedBox(height: 5),
+                _DetailRow(
+                  'seat',
+                  'Asiento',
+                  draft.flights
+                      .map((flight) => draft.seats[flight.inventoryKey]!)
+                      .join(' · '),
+                ),
+                const SizedBox(height: 5),
+                _DetailRow(
+                  'briefcase',
+                  'Equipaje adicional',
+                  draft.baggage == Baggage.none
+                      ? 'Sin equipaje'
+                      : '1 maleta 23 kg',
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 14),
-      Panel(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-        child: Column(
-          children: [
-            LabelValue('Vuelo ida', money(draft.fare!.price(draft.outbound!))),
-            if (draft.inbound != null) ...[
-              const Divider(height: 12, color: borderColor),
-              LabelValue(
-                'Vuelo regreso',
-                money(draft.fare!.price(draft.inbound!)),
-              ),
-            ],
-            const Divider(height: 12, color: borderColor),
-            LabelValue('Equipaje adicional', money(draft.baggage.price)),
-            const Divider(height: 12, color: borderColor),
-            LabelValue('Tasas', money(draft.fees)),
-            const SizedBox(height: 9),
-            _Total('Total', draft.total),
-          ],
-        ),
+          ),
+        ],
+        second: [
+          Panel(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+            child: Column(
+              children: [
+                LabelValue(
+                  'Vuelo ida',
+                  money(draft.fare!.price(draft.outbound!)),
+                ),
+                if (draft.inbound != null) ...[
+                  const Divider(height: 12, color: borderColor),
+                  LabelValue(
+                    'Vuelo regreso',
+                    money(draft.fare!.price(draft.inbound!)),
+                  ),
+                ],
+                const Divider(height: 12, color: borderColor),
+                LabelValue('Equipaje adicional', money(draft.baggage.price)),
+                const Divider(height: 12, color: borderColor),
+                LabelValue('Tasas', money(draft.fees)),
+                const SizedBox(height: 9),
+                _Total('Total', draft.total),
+              ],
+            ),
+          ),
+        ],
       ),
     ],
   );
@@ -103,90 +117,95 @@ class ConfirmedScreen extends StatelessWidget {
         ActionButton('Ir al inicio', onHome, outline: true),
       ],
     ),
-    children: [
-      Panel(
-        padding: const EdgeInsets.fromLTRB(16, 21, 16, 23),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: reducesMotion(context) ? 1 : .72, end: 1),
-                duration: motionDuration(
-                  context,
-                  const Duration(milliseconds: 400),
-                ),
-                curve: Curves.easeOutBack,
-                child: const CircleAvatar(
-                  radius: 44,
-                  backgroundColor: blue,
-                  child: Icon(Icons.check, color: Colors.white, size: 43),
-                ),
-                builder: (context, scale, child) => Transform.scale(
-                  scale: reducesMotion(context) ? 1 : scale,
-                  child: child,
-                ),
-              ),
-            ),
-            const SizedBox(height: 19),
-            const Copy(
-              '¡Reserva confirmada!',
-              size: 23,
-              weight: FontWeight.w600,
-              align: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            const Copy(
-              'Tu viaje ha sido registrado con éxito',
-              size: 13,
-              color: muted,
-              align: TextAlign.center,
-            ),
-            const SizedBox(height: 23),
-            Panel(
-              color: paleBlue,
-              outline: paleBlue,
-              child: Column(
-                children: [
-                  const Copy('Código de reserva', size: 13, color: muted),
-                  Copy(
-                    booking.reference,
-                    size: 32,
-                    color: blue,
-                    weight: FontWeight.w600,
+    children: responsiveColumns(
+      context,
+      mobileGap: 15,
+      first: [
+        Panel(
+          padding: const EdgeInsets.fromLTRB(16, 21, 16, 23),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: reducesMotion(context) ? 1 : .72, end: 1),
+                  duration: motionDuration(
+                    context,
+                    const Duration(milliseconds: 400),
                   ),
-                ],
+                  curve: Curves.easeOutBack,
+                  child: const CircleAvatar(
+                    radius: 44,
+                    backgroundColor: blue,
+                    child: Icon(Icons.check, color: Colors.white, size: 43),
+                  ),
+                  builder: (context, scale, child) => Transform.scale(
+                    scale: reducesMotion(context) ? 1 : scale,
+                    child: child,
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 15),
-      Panel(
-        padding: const EdgeInsets.all(11),
-        child: Column(
-          children: [
-            for (final (index, flight) in booking.flights.indexed) ...[
-              _DetailRow(
-                index == 0 ? 'takeoff' : 'landing',
-                flight.cityRoute,
-                dateLabel(flight.date, weekday: true),
-                tag: index == 0 ? 'Ida' : 'Regreso',
-                route: true,
+              const SizedBox(height: 19),
+              const Copy(
+                '¡Reserva confirmada!',
+                size: 23,
+                weight: FontWeight.w600,
+                align: TextAlign.center,
               ),
-              const SizedBox(height: 7),
+              const SizedBox(height: 4),
+              const Copy(
+                'Tu viaje ha sido registrado con éxito',
+                size: 13,
+                color: muted,
+                align: TextAlign.center,
+              ),
+              const SizedBox(height: 23),
+              Panel(
+                color: paleBlue,
+                outline: paleBlue,
+                child: Column(
+                  children: [
+                    const Copy('Código de reserva', size: 13, color: muted),
+                    Copy(
+                      booking.reference,
+                      size: 32,
+                      color: blue,
+                      weight: FontWeight.w600,
+                    ),
+                  ],
+                ),
+              ),
             ],
-            InfoTile('Pasajero', booking.passenger.name, icon: 'user'),
-            const SizedBox(height: 7),
-            InfoTile(
-              'Asiento',
-              booking.flights.map(booking.seatFor).join(' · '),
-              icon: 'seat',
-            ),
-          ],
+          ),
         ),
-      ),
-    ],
+      ],
+      second: [
+        Panel(
+          padding: const EdgeInsets.all(11),
+          child: Column(
+            children: [
+              for (final (index, flight) in booking.flights.indexed) ...[
+                _DetailRow(
+                  index == 0 ? 'takeoff' : 'landing',
+                  flight.cityRoute,
+                  dateLabel(flight.date, weekday: true),
+                  tag: index == 0 ? 'Ida' : 'Regreso',
+                  route: true,
+                ),
+                const SizedBox(height: 7),
+              ],
+              InfoTile('Pasajero', booking.passenger.name, icon: 'user'),
+              const SizedBox(height: 7),
+              InfoTile(
+                'Asiento',
+                booking.flights.map(booking.seatFor).join(' · '),
+                icon: 'seat',
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -219,19 +238,31 @@ class _TripsScreenState extends State<TripsScreen> {
         _ => true,
       },
     );
+    final desktop = usesDesktopLayout(context);
+    final cards = [
+      for (final booking in trips)
+        _TripCard(booking: booking, onTap: () => widget.onOpen(booking)),
+    ];
+    final filters = Segments(
+      labels: const ['Todos', 'Próximos', 'Completados'],
+      index: _filter,
+      onChange: (value) => setState(() => _filter = value),
+    );
     return AppPage(
-      header: const PageHeader(back: false),
+      header: desktop ? null : const PageHeader(back: false),
       children: [
         const Heading(
           'Mis viajes',
           subtitle: 'Consulta tus reservas activas y futuras',
         ),
         const SizedBox(height: 22),
-        Segments(
-          labels: const ['Todos', 'Próximos', 'Completados'],
-          index: _filter,
-          onChange: (value) => setState(() => _filter = value),
-        ),
+        if (desktop)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: SizedBox(width: 390, child: filters),
+          )
+        else
+          filters,
         const SizedBox(height: 20),
         if (trips.isEmpty)
           Panel(
@@ -251,14 +282,24 @@ class _TripsScreenState extends State<TripsScreen> {
               ],
             ),
           ),
-        for (final booking in trips)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 15),
-            child: _TripCard(
-              booking: booking,
-              onTap: () => widget.onOpen(booking),
-            ),
-          ),
+        if (desktop)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 980 ? 3 : 2;
+              final width =
+                  (constraints.maxWidth - 18 * (columns - 1)) / columns;
+              return Wrap(
+                spacing: 18,
+                runSpacing: 18,
+                children: [
+                  for (final card in cards) SizedBox(width: width, child: card),
+                ],
+              );
+            },
+          )
+        else
+          for (final card in cards)
+            Padding(padding: const EdgeInsets.only(bottom: 15), child: card),
       ],
     );
   }
@@ -433,67 +474,77 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        Panel(
-          child: Row(
-            children: [
-              const Icon(Icons.confirmation_number_outlined, size: 22),
-              const SizedBox(width: 8),
-              const Copy('Código', size: 13),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Copy(
-                  booking.reference,
-                  size: 23,
-                  color: blue,
-                  weight: FontWeight.w600,
-                ),
+        ...responsiveColumns(
+          context,
+          firstFlex: 6,
+          secondFlex: 4,
+          mobileGap: 12,
+          first: [
+            Panel(
+              child: Row(
+                children: [
+                  const Icon(Icons.confirmation_number_outlined, size: 22),
+                  const SizedBox(width: 8),
+                  const Copy('Código', size: 13),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Copy(
+                      booking.reference,
+                      size: 23,
+                      color: blue,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Panel(
-          child: Column(
-            children: [
-              for (final (index, flight) in booking.flights.indexed) ...[
-                if (index > 0) const Divider(height: 19, color: borderColor),
-                _ItineraryLeg(
-                  flight: flight,
-                  returning: index > 0,
-                  seat: booking.seatFor(flight),
-                ),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Panel(
-          child: _LabeledIcon(
-            'user',
-            booking.passenger.email,
-            booking.passenger.name,
-            valueFirst: true,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Panel(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              _DetailRow('tag', 'Tarifa', booking.fare.label, flat: true),
-              const Divider(height: 10, color: borderColor),
-              _DetailRow(
-                'briefcase',
-                'Equipaje adicional',
-                booking.baggage == Baggage.none
-                    ? 'Sin equipaje'
-                    : '1 maleta 23 kg',
-                flat: true,
+            ),
+            const SizedBox(height: 12),
+            Panel(
+              child: Column(
+                children: [
+                  for (final (index, flight) in booking.flights.indexed) ...[
+                    if (index > 0)
+                      const Divider(height: 19, color: borderColor),
+                    _ItineraryLeg(
+                      flight: flight,
+                      returning: index > 0,
+                      seat: booking.seatFor(flight),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 7),
-              _Total('Total pagado', booking.total),
-            ],
-          ),
+            ),
+            const SizedBox(height: 12),
+            Panel(
+              child: _LabeledIcon(
+                'user',
+                booking.passenger.email,
+                booking.passenger.name,
+                valueFirst: true,
+              ),
+            ),
+          ],
+          second: [
+            Panel(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  _DetailRow('tag', 'Tarifa', booking.fare.label, flat: true),
+                  const Divider(height: 10, color: borderColor),
+                  _DetailRow(
+                    'briefcase',
+                    'Equipaje adicional',
+                    booking.baggage == Baggage.none
+                        ? 'Sin equipaje'
+                        : '1 maleta 23 kg',
+                    flat: true,
+                  ),
+                  const SizedBox(height: 7),
+                  _Total('Total pagado', booking.total),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );

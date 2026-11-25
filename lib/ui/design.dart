@@ -1,5 +1,6 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'motion.dart';
 
@@ -68,6 +69,46 @@ ThemeData unionAirTheme() => ThemeData(
   ),
 );
 
+bool usesDesktopLayout(BuildContext context) =>
+    MediaQuery.sizeOf(context).width >= 900 &&
+    defaultTargetPlatform != TargetPlatform.android &&
+    defaultTargetPlatform != TargetPlatform.iOS;
+
+List<Widget> responsiveColumns(
+  BuildContext context, {
+  required List<Widget> first,
+  required List<Widget> second,
+  int firstFlex = 1,
+  int secondFlex = 1,
+  double mobileGap = 14,
+}) {
+  if (!usesDesktopLayout(context)) {
+    return [...first, SizedBox(height: mobileGap), ...second];
+  }
+  return [
+    Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: firstFlex,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: first,
+          ),
+        ),
+        const SizedBox(width: 28),
+        Expanded(
+          flex: secondFlex,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: second,
+          ),
+        ),
+      ],
+    ),
+  ];
+}
+
 class Copy extends StatelessWidget {
   const Copy(
     this.text, {
@@ -122,16 +163,22 @@ class ArtIcon extends StatelessWidget {
 }
 
 class Brand extends StatelessWidget {
-  const Brand({super.key, this.white = false, this.large = false});
+  const Brand({
+    super.key,
+    this.white = false,
+    this.large = false,
+    this.alignment = MainAxisAlignment.center,
+  });
 
   final bool white;
   final bool large;
+  final MainAxisAlignment alignment;
 
   @override
   Widget build(BuildContext context) => Semantics(
     header: true,
     child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: alignment,
       children: [
         ArtIcon(white ? 'logo-white' : 'logo-blue', size: large ? 61 : 51),
         SizedBox(width: large ? 16 : 9),
@@ -169,7 +216,13 @@ class PageHeader extends StatelessWidget {
                 )
               : null,
         ),
-        const Expanded(child: Brand()),
+        Expanded(
+          child: Brand(
+            alignment: usesDesktopLayout(context)
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.center,
+          ),
+        ),
         SizedBox(width: 42, child: action),
       ],
     ),
@@ -192,48 +245,69 @@ class AppPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final desktop = usesDesktopLayout(context);
+    final pagePadding = desktop
+        ? const EdgeInsets.fromLTRB(36, 30, 36, 28)
+        : padding;
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     final visibleHeader = keyboardOpen ? null : header;
+    final content = Column(
+      children: [
+        if (visibleHeader != null)
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              pagePadding.left,
+              pagePadding.top,
+              pagePadding.right,
+              16,
+            ),
+            child: visibleHeader,
+          ),
+        Expanded(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: pagePadding.copyWith(
+              top: visibleHeader == null ? pagePadding.top : 0,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ...children,
+                if (footer == null)
+                  SizedBox(height: MediaQuery.paddingOf(context).bottom),
+              ],
+            ),
+          ),
+        ),
+        if (footer case final widget?)
+          SafeArea(
+            top: false,
+            minimum: desktop
+                ? const EdgeInsets.fromLTRB(36, 12, 36, 24)
+                : const EdgeInsets.fromLTRB(24, 8, 24, 16),
+            child: desktop
+                ? Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 340),
+                      child: widget,
+                    ),
+                  )
+                : widget,
+          ),
+      ],
+    );
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            if (visibleHeader != null)
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  padding.left,
-                  padding.top,
-                  padding.right,
-                  16,
+        child: desktop
+            ? Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1240),
+                  child: content,
                 ),
-                child: visibleHeader,
-              ),
-            Expanded(
-              child: SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: padding.copyWith(
-                  top: visibleHeader == null ? padding.top : 0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ...children,
-                    if (footer == null)
-                      SizedBox(height: MediaQuery.paddingOf(context).bottom),
-                  ],
-                ),
-              ),
-            ),
-            if (footer case final widget?)
-              SafeArea(
-                top: false,
-                minimum: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                child: widget,
-              ),
-          ],
-        ),
+              )
+            : content,
       ),
     );
   }
