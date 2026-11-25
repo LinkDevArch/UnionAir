@@ -42,164 +42,173 @@ class _SeatScreenState extends State<SeatScreen> {
 
     return AppPage(
       footer: ActionButton('Continuar', selected == null ? null : proceed),
-      children: [
-        Panel(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              InfoTile(
-                _leg == 0 ? 'Ida' : 'Regreso',
-                flight.route,
-                icon: _leg == 0 ? 'takeoff' : 'landing',
-              ),
-              const SizedBox(height: 7),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: InfoTile(
-                      'Fecha',
-                      dateLabel(flight.date, weekday: true, year: true),
-                      icon: 'calendar',
-                    ),
-                  ),
-                  const SizedBox(width: 7),
-                  Expanded(
-                    flex: 2,
-                    child: InfoTile('Tarifa', draft.fare!.label, icon: 'tag'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 21),
-        const Heading('Selecciona tu asiento', size: 20),
-        const SizedBox(height: 10),
-        if (draft.flights.length > 1) ...[
-          Segments(
-            labels: const ['Ida', 'Regreso'],
-            index: _leg,
-            onChange: (value) => setState(() => _leg = value),
-          ),
-          const SizedBox(height: 10),
-        ],
-        const Panel(
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          radius: 14,
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            runSpacing: 6,
-            spacing: 8,
-            children: [
-              _Legend('Disponible', Colors.white, ' '),
-              _Legend('Ocupado', Color(0xFFBDC7D4), '×'),
-              _Legend('Seleccionado', blue, '✓'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Panel(
-          child: Align(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 282),
-              child: Column(
-                children: [
-                  const Row(
-                    children: [
-                      Expanded(
-                        child: Copy('A', size: 11, align: TextAlign.center),
-                      ),
-                      Expanded(
-                        child: Copy('B', size: 11, align: TextAlign.center),
-                      ),
-                      SizedBox(width: 29),
-                      Expanded(
-                        child: Copy('C', size: 11, align: TextAlign.center),
-                      ),
-                      Expanded(
-                        child: Copy('D', size: 11, align: TextAlign.center),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  for (var row = 1; row <= BookingService.cabinRows; row++)
-                    Row(
-                      children: [
-                        for (final (index, letter)
-                            in BookingService.cabinColumns.indexed) ...[
-                          if (index == 2)
-                            SizedBox(
-                              width: 29,
-                              child: Copy(
-                                '$row',
-                                size: 10,
-                                align: TextAlign.center,
-                                color: muted,
-                              ),
-                            ),
-                          Expanded(
-                            child: _Seat(
-                              seat: '$row$letter',
-                              selected: selected == '$row$letter',
-                              available: widget.service.isSeatAvailable(
-                                flight,
-                                '$row$letter',
-                              ),
-                              onSelect: () => setState(
-                                () => draft.seats[flight.inventoryKey] =
-                                    '$row$letter',
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Panel(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  color: fieldColor,
-                  borderRadius: BorderRadius.circular(12),
+      children: responsiveColumns(
+        context,
+        firstFlex: 4,
+        secondFlex: 6,
+        mobileGap: 12,
+        first: [
+          Panel(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                InfoTile(
+                  _leg == 0 ? 'Ida' : 'Regreso',
+                  flight.route,
+                  icon: _leg == 0 ? 'takeoff' : 'landing',
                 ),
-                child: const ArtIcon('seat'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 7),
+                Row(
                   children: [
-                    const Copy('Asiento elegido', size: 11, color: muted),
-                    Copy(
-                      selected ?? '—',
-                      size: 21,
-                      color: blue,
-                      weight: FontWeight.w600,
+                    Expanded(
+                      flex: 3,
+                      child: InfoTile(
+                        'Fecha',
+                        dateLabel(flight.date, weekday: true, year: true),
+                        icon: 'calendar',
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      flex: 2,
+                      child: InfoTile('Tarifa', draft.fare!.label, icon: 'tag'),
                     ),
                   ],
                 ),
-              ),
-              if (selected != null)
-                StatusPill(
-                  selected.endsWith('B') || selected.endsWith('C')
-                      ? 'Pasillo'
-                      : 'Ventana',
-                  color: muted,
-                  background: fieldColor,
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 21),
+          const Heading('Selecciona tu asiento', size: 20),
+          const SizedBox(height: 10),
+          if (draft.flights.length > 1) ...[
+            Segments(
+              labels: const ['Ida', 'Regreso'],
+              index: _leg,
+              onChange: (value) => setState(() => _leg = value),
+            ),
+            const SizedBox(height: 10),
+          ],
+          const Panel(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            radius: 14,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              runSpacing: 6,
+              spacing: 8,
+              children: [
+                _Legend('Disponible', Colors.white, ' '),
+                _Legend('Ocupado', Color(0xFFBDC7D4), '×'),
+                _Legend('Seleccionado', blue, '✓'),
+              ],
+            ),
+          ),
+        ],
+        second: [
+          Panel(
+            child: Align(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: usesDesktopLayout(context) ? 420 : 282,
+                ),
+                child: Column(
+                  children: [
+                    const Row(
+                      children: [
+                        Expanded(
+                          child: Copy('A', size: 11, align: TextAlign.center),
+                        ),
+                        Expanded(
+                          child: Copy('B', size: 11, align: TextAlign.center),
+                        ),
+                        SizedBox(width: 29),
+                        Expanded(
+                          child: Copy('C', size: 11, align: TextAlign.center),
+                        ),
+                        Expanded(
+                          child: Copy('D', size: 11, align: TextAlign.center),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    for (var row = 1; row <= BookingService.cabinRows; row++)
+                      Row(
+                        children: [
+                          for (final (index, letter)
+                              in BookingService.cabinColumns.indexed) ...[
+                            if (index == 2)
+                              SizedBox(
+                                width: 29,
+                                child: Copy(
+                                  '$row',
+                                  size: 10,
+                                  align: TextAlign.center,
+                                  color: muted,
+                                ),
+                              ),
+                            Expanded(
+                              child: _Seat(
+                                seat: '$row$letter',
+                                selected: selected == '$row$letter',
+                                available: widget.service.isSeatAvailable(
+                                  flight,
+                                  '$row$letter',
+                                ),
+                                onSelect: () => setState(
+                                  () => draft.seats[flight.inventoryKey] =
+                                      '$row$letter',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Panel(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: fieldColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const ArtIcon('seat'),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Copy('Asiento elegido', size: 11, color: muted),
+                      Copy(
+                        selected ?? '—',
+                        size: 21,
+                        color: blue,
+                        weight: FontWeight.w600,
+                      ),
+                    ],
+                  ),
+                ),
+                if (selected != null)
+                  StatusPill(
+                    selected.endsWith('B') || selected.endsWith('C')
+                        ? 'Pasillo'
+                        : 'Ventana',
+                    color: muted,
+                    background: fieldColor,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -393,93 +402,100 @@ class _PassengerScreenState extends State<PassengerScreen> {
           ActionButton('Continuar', _proceed),
         ],
       ),
-      children: [
-        const Heading(
-          'Datos del pasajero',
-          subtitle: 'Completa la información para tu reserva',
-        ),
-        const SizedBox(height: 16),
-        Panel(
-          child: Form(
-            key: _form,
-            onChanged: _onFormChanged,
-            autovalidateMode: _validationAttempted
-                ? AutovalidateMode.onUserInteraction
-                : AutovalidateMode.disabled,
+      children: responsiveColumns(
+        context,
+        firstFlex: 6,
+        secondFlex: 5,
+        mobileGap: 23,
+        first: [
+          const Heading(
+            'Datos del pasajero',
+            subtitle: 'Completa la información para tu reserva',
+          ),
+          const SizedBox(height: 16),
+          Panel(
+            child: Form(
+              key: _form,
+              onChanged: _onFormChanged,
+              autovalidateMode: _validationAttempted
+                  ? AutovalidateMode.onUserInteraction
+                  : AutovalidateMode.disabled,
+              child: Column(
+                children: [
+                  _field(
+                    'Nombres',
+                    'Ana',
+                    _first,
+                    (value) => value.length >= 2,
+                    'Ingresa los nombres.',
+                  ),
+                  _field(
+                    'Apellidos',
+                    'Torres',
+                    _last,
+                    (value) => value.length >= 2,
+                    'Ingresa los apellidos.',
+                  ),
+                  _field(
+                    'Documento',
+                    'Número de documento',
+                    _document,
+                    Passenger.validDocument,
+                    'Ingresa entre 5 y 20 letras o números.',
+                  ),
+                  _field(
+                    'Correo electrónico',
+                    'nombre@correo.com',
+                    _email,
+                    Passenger.validEmail,
+                    'Ingresa un correo válido.',
+                    keyboard: TextInputType.emailAddress,
+                  ),
+                  _field(
+                    'Teléfono',
+                    '+57 300 555 0100',
+                    _phone,
+                    Passenger.validPhone,
+                    'Ingresa un teléfono válido.',
+                    keyboard: TextInputType.phone,
+                    last: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+        second: [
+          const Heading('Equipaje adicional', size: 21),
+          const SizedBox(height: 13),
+          Panel(
+            padding: const EdgeInsets.all(11),
             child: Column(
               children: [
-                _field(
-                  'Nombres',
-                  'Ana',
-                  _first,
-                  (value) => value.length >= 2,
-                  'Ingresa los nombres.',
-                ),
-                _field(
-                  'Apellidos',
-                  'Torres',
-                  _last,
-                  (value) => value.length >= 2,
-                  'Ingresa los apellidos.',
-                ),
-                _field(
-                  'Documento',
-                  'Número de documento',
-                  _document,
-                  Passenger.validDocument,
-                  'Ingresa entre 5 y 20 letras o números.',
-                ),
-                _field(
-                  'Correo electrónico',
-                  'nombre@correo.com',
-                  _email,
-                  Passenger.validEmail,
-                  'Ingresa un correo válido.',
-                  keyboard: TextInputType.emailAddress,
-                ),
-                _field(
-                  'Teléfono',
-                  '+57 300 555 0100',
-                  _phone,
-                  Passenger.validPhone,
-                  'Ingresa un teléfono válido.',
-                  keyboard: TextInputType.phone,
-                  last: true,
-                ),
+                for (final baggage in Baggage.values)
+                  Padding(
+                    padding: EdgeInsets.only(
+                      bottom: baggage == Baggage.none ? 8 : 0,
+                    ),
+                    child: _BaggageOption(
+                      baggage: baggage,
+                      selected: draft.baggage == baggage,
+                      onSelect: () => setState(() => draft.baggage = baggage),
+                    ),
+                  ),
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 23),
-        const Heading('Equipaje adicional', size: 21),
-        const SizedBox(height: 13),
-        Panel(
-          padding: const EdgeInsets.all(11),
-          child: Column(
-            children: [
-              for (final baggage in Baggage.values)
-                Padding(
-                  padding: EdgeInsets.only(
-                    bottom: baggage == Baggage.none ? 8 : 0,
-                  ),
-                  child: _BaggageOption(
-                    baggage: baggage,
-                    selected: draft.baggage == baggage,
-                    onSelect: () => setState(() => draft.baggage = baggage),
-                  ),
-                ),
-            ],
+          const SizedBox(height: 14),
+          Panel(
+            child: LabelValue(
+              'Total parcial',
+              money(draft.faresTotal + draft.baggage.price),
+              accent: true,
+            ),
           ),
-        ),
-        const SizedBox(height: 14),
-        Panel(
-          child: LabelValue(
-            'Total parcial',
-            money(draft.faresTotal + draft.baggage.price),
-            accent: true,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

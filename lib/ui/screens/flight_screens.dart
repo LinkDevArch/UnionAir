@@ -88,104 +88,111 @@ class _FlightResultsScreenState extends State<FlightResultsScreen> {
             ],
           ],
         ),
-        children: [
-          Panel(
-            padding: const EdgeInsets.all(13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _SummaryCell(
-                  'takeoff',
-                  '${query.origin.label}   →   ${query.destination.label}',
-                ),
-                const SizedBox(height: 7),
-                Row(
-                  children: [
-                    Expanded(child: _SummaryCell('landing', query.typeLabel)),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: _SummaryCell(
-                        'calendar',
-                        '${dateLabel(query.departure)}${query.returnDate == null ? '' : ' · ${dateLabel(query.returnDate!)}'}',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 7),
-                Row(
-                  children: [
-                    const Expanded(child: _SummaryCell('user', '1 adulto')),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: _SummaryCell('seat', query.travelClass.label),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 9),
-                ActionButton(
-                  'Editar búsqueda',
-                  () => Navigator.maybePop(context),
-                  outline: true,
-                  height: 34,
-                  fontSize: 13,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 21),
-          Row(
-            children: [
-              const Expanded(child: Heading('Vuelos disponibles', size: 21)),
-              Copy(
-                '${results.length} ${results.length == 1 ? 'vuelo' : 'vuelos'}',
-                size: 12,
-                color: muted,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (query.roundTrip) ...[
-            Segments(
-              labels: const ['Ida', 'Regreso'],
-              index: _returning ? 1 : 0,
-              onChange: (index) => setState(() => _returning = index == 1),
-            ),
-            const SizedBox(height: 12),
-          ],
-          if (results.isEmpty)
+        children: responsiveColumns(
+          context,
+          firstFlex: 4,
+          secondFlex: 7,
+          mobileGap: 21,
+          first: [
             Panel(
+              padding: const EdgeInsets.all(13),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.search_off, color: blue, size: 34),
-                  const SizedBox(height: 8),
-                  const Heading('No encontramos vuelos', size: 17),
-                  const SizedBox(height: 4),
-                  const Copy(
-                    'Elige otra fecha o cambia la ruta para buscar de nuevo.',
-                    align: TextAlign.center,
-                    color: muted,
+                  _SummaryCell(
+                    'takeoff',
+                    '${query.origin.label}   →   ${query.destination.label}',
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 7),
+                  Row(
+                    children: [
+                      Expanded(child: _SummaryCell('landing', query.typeLabel)),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: _SummaryCell(
+                          'calendar',
+                          '${dateLabel(query.departure)}${query.returnDate == null ? '' : ' · ${dateLabel(query.returnDate!)}'}',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 7),
+                  Row(
+                    children: [
+                      const Expanded(child: _SummaryCell('user', '1 adulto')),
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: _SummaryCell('seat', query.travelClass.label),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 9),
                   ActionButton(
-                    'Cambiar búsqueda',
+                    'Editar búsqueda',
                     () => Navigator.maybePop(context),
                     outline: true,
+                    height: 34,
+                    fontSize: 13,
                   ),
                 ],
               ),
             ),
-          for (final flight in results)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 11),
-              child: _FlightCard(
-                flight: flight,
-                selected: selected?.inventoryKey == flight.inventoryKey,
-                onSelect: () => setState(
-                  () => draft.selectFlight(flight, isReturn: _returning),
+          ],
+          second: [
+            Row(
+              children: [
+                const Expanded(child: Heading('Vuelos disponibles', size: 21)),
+                Copy(
+                  '${results.length} ${results.length == 1 ? 'vuelo' : 'vuelos'}',
+                  size: 12,
+                  color: muted,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (query.roundTrip) ...[
+              Segments(
+                labels: const ['Ida', 'Regreso'],
+                index: _returning ? 1 : 0,
+                onChange: (index) => setState(() => _returning = index == 1),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (results.isEmpty)
+              Panel(
+                child: Column(
+                  children: [
+                    const Icon(Icons.search_off, color: blue, size: 34),
+                    const SizedBox(height: 8),
+                    const Heading('No encontramos vuelos', size: 17),
+                    const SizedBox(height: 4),
+                    const Copy(
+                      'Elige otra fecha o cambia la ruta para buscar de nuevo.',
+                      align: TextAlign.center,
+                      color: muted,
+                    ),
+                    const SizedBox(height: 12),
+                    ActionButton(
+                      'Cambiar búsqueda',
+                      () => Navigator.maybePop(context),
+                      outline: true,
+                    ),
+                  ],
                 ),
               ),
-            ),
-        ],
+            for (final flight in results)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 11),
+                child: _FlightCard(
+                  flight: flight,
+                  selected: selected?.inventoryKey == flight.inventoryKey,
+                  onSelect: () => setState(
+                    () => draft.selectFlight(flight, isReturn: _returning),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -372,70 +379,77 @@ class _FareScreenState extends State<FareScreen> {
         'Continuar',
         draft.fare == null ? null : widget.onContinue,
       ),
-      children: [
-        Panel(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              for (final (index, flight) in draft.flights.indexed) ...[
-                if (index > 0) const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: fieldColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      ArtIcon(index == 0 ? 'takeoff' : 'landing'),
-                      const SizedBox(width: 9),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Copy(
-                              flight.route,
-                              size: 12,
-                              weight: FontWeight.w600,
-                            ),
-                            Copy(
-                              dateLabel(flight.date, weekday: true),
-                              size: 11,
-                              color: muted,
-                            ),
-                          ],
+      children: responsiveColumns(
+        context,
+        firstFlex: 4,
+        secondFlex: 7,
+        mobileGap: 31,
+        first: [
+          Panel(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                for (final (index, flight) in draft.flights.indexed) ...[
+                  if (index > 0) const SizedBox(height: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: fieldColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        ArtIcon(index == 0 ? 'takeoff' : 'landing'),
+                        const SizedBox(width: 9),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Copy(
+                                flight.route,
+                                size: 12,
+                                weight: FontWeight.w600,
+                              ),
+                              Copy(
+                                dateLabel(flight.date, weekday: true),
+                                size: 11,
+                                color: muted,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      const StatusPill('Seleccionado ✓'),
-                    ],
+                        const SizedBox(width: 4),
+                        const StatusPill('Seleccionado ✓'),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 31),
-        const Row(
-          children: [
-            Expanded(child: Heading('Elige tu tarifa', size: 21)),
-            ArtIcon('user', size: 19, color: muted),
-            SizedBox(width: 5),
-            Copy('1 adulto', size: 11, color: muted),
-          ],
-        ),
-        const SizedBox(height: 14),
-        for (final fare in Fare.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: _FareCard(
-              fare: fare,
-              price: fare.price(outbound),
-              selected: draft.fare == fare,
-              onSelect: () => setState(() => draft.fare = fare),
             ),
           ),
-      ],
+        ],
+        second: [
+          const Row(
+            children: [
+              Expanded(child: Heading('Elige tu tarifa', size: 21)),
+              ArtIcon('user', size: 19, color: muted),
+              SizedBox(width: 5),
+              Copy('1 adulto', size: 11, color: muted),
+            ],
+          ),
+          const SizedBox(height: 14),
+          for (final fare in Fare.values)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: _FareCard(
+                fare: fare,
+                price: fare.price(outbound),
+                selected: draft.fare == fare,
+                onSelect: () => setState(() => draft.fare = fare),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
